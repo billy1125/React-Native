@@ -1,14 +1,20 @@
 import { StatusBar } from 'expo-status-bar';
 import React, { useState } from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, KeyboardAvoidingView, Platform, Alert } from 'react-native';
 
-export default function App() {
+export default function LoginScreen() {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
 
   const handleLogin = () => {
-    // 這裡添加登入邏輯
-    console.log('Login attempt with:', username, password);
+    // 這裡模擬登入邏輯
+    // 在實際應用中，您應該連接到後端API進行驗證
+    if (username === 'user' && password === 'password') {
+      Alert.alert('登入成功', '歡迎回來，' + username + '！');
+      // 這裡可以添加導航到應用主頁面的邏輯
+    } else {
+      Alert.alert('登入失敗', '用戶名或密碼錯誤，請重試。');
+    }
   };
 
   return (
@@ -17,10 +23,10 @@ export default function App() {
       style={styles.container}
     >
       <View style={styles.loginContainer}>
-        <Text style={styles.logo}>系統登入</Text>
+        <Text style={styles.logo}>登入</Text>
         <TextInput
           style={styles.input}
-          placeholder="帳號"
+          placeholder="用戶名"
           onChangeText={setUsername}
           value={username}
           autoCapitalize="none"
@@ -39,6 +45,7 @@ export default function App() {
     </KeyboardAvoidingView>
   );
 }
+
 
 const styles = StyleSheet.create({
   container: {
