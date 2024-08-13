@@ -1,47 +1,48 @@
-import React, { useState } from "react";
+import React, { useState, useEffect  } from "react";
 import { StatusBar } from "expo-status-bar";
 import { StyleSheet, Text, View, TouchableOpacity } from "react-native";
 
 export default function App() {
   const [currentNumber, setCurrentNumber] = useState('');    // 輸入中的數字
-  const [firstNumber, setFirstNumber] = useState('');  // 輸入四則運算後的數字
-  const [secondNumber, setSecondNumber] = useState('');  // 輸入四則運算後的數字
-  const [operation, setOperation] = useState('');            // 儲存四則運算
+  const [firstNumber, setFirstNumber] = useState({ value: '0' });        // 輸入第一個數字
+  const [secondNumber, setSecondNumber] = useState({ value: '0' });      // 輸入第二的數字
+  const [operation, setOperation] = useState('');            // 儲存四則運算符號
   
-  const handlePress = (value) => {
-    if ('0123456789.'.includes(value)) {
-      if (currentNumber.startsWith("0") && value != ''){
-        setCurrentNumber(value);
-      }else{
-        if (operation !== ''){
-          setCurrentNumber(firstNumber + operation + value);
-          setSecondNumber(secondNumber + value);
-        }
-        setCurrentNumber(currentNumber + value);        // 輸入數字
-      }
-      
-    }
-    else if ('+-*/'.includes(value)) {                // 如果使用者選擇四則運算，將螢幕上的數字儲存
-      if (currentNumber !== '' && operation === '') {
-        setFirstNumber(currentNumber);        
-        setOperation(value);
-        setCurrentNumber(currentNumber + value);
-      }
-      else if (currentNumber !== '' && operation !== '') {     
-        setOperation(value);
-        setCurrentNumber(firstNumber + value);
-      }
-    }
-    else if (value === '=') {                         // 進行計算
-      if (firstNumber !== '' && secondNumber !== '' && operation !== '') {
+  // 使用者按下按鍵，依據不同按鍵處理
+  useEffect(() => {
+    if (secondNumber !== '') {
+      if (firstNumber !== '' && operation !== '') {
         const result = calculate(parseFloat(firstNumber), parseFloat(secondNumber), operation);
-        setCurrentNumber(result.toString());          // 將結果顯示在螢幕上
+        setCurrentNumber(result.toString());
         setFirstNumber('');
         setSecondNumber('');
         setOperation('');
       }
     }
-    else if (value === 'C') {                         // 清除按鍵
+  }, [secondNumber, firstNumber, operation]);
+
+  const handlePress = (value) => {
+    if ('0123456789.'.includes(value)) {
+      if (currentNumber.startsWith("0") && value !== '.') {
+        setCurrentNumber(value);
+      } else {
+        setCurrentNumber(currentNumber + value);
+      }
+    }
+    else if ('+-*/'.includes(value)) {
+      if (currentNumber !== '' && operation === '') {
+        setFirstNumber(currentNumber);
+        setCurrentNumber('0');
+      }
+      else if (currentNumber !== '' && operation !== '') {
+        setCurrentNumber(firstNumber);
+      }
+      setOperation(value);
+    }
+    else if (value === '=') {
+      setSecondNumber(currentNumber);
+    }
+    else if (value === 'C') {
       setCurrentNumber('0');
       setFirstNumber('');
       setSecondNumber('');
@@ -49,17 +50,17 @@ export default function App() {
     }
   };
   
-  // 四則運算的函式
-  const calculate = (num1, num2, op) => {
-    switch (op) {
+  // 進行四則運算的函式
+  const calculate = (firstNumber, secondNumber, operation) => {
+    switch (operation) {
       case '+':
-        return num1 + num2;
+        return firstNumber + secondNumber;
       case '-':
-        return num1 - num2;
+        return firstNumber - secondNumber;
       case '*':
-        return num1 * num2;
+        return firstNumber * secondNumber;
       case '/':
-        return num2 !== 0 ? num1 / num2 : 'Error';
+        return secondNumber !== 0 ? firstNumber / secondNumber : 'Error';
       default:
         return 'Error';
     }
@@ -67,20 +68,25 @@ export default function App() {
 
   return (
     <View style={styles.container}>
-      <View style={styles.result}>
-        <Text style={styles.resultText}>{currentNumber}</Text>
+      <View style={styles.currentValue}>
+        <View style={styles.result}>
+          <Text style={styles.resultText}>{currentNumber}</Text>
+        </View>
+        <View style={styles.operation}>
+          <Text style={styles.resultText}>{operation}</Text>
+        </View>
       </View>
       <View style={styles.buttons}>
-      <View style={styles.row}>
-          <TouchableOpacity style={[styles.button, styles.clearButton]} onPress={() => handlePress('C')}>
+        <View style={styles.row}>
+          <TouchableOpacity style={[styles.button, styles.clearButton]}  onPress={() => handlePress('C')}>
             <Text style={styles.buttonText}>C</Text>
           </TouchableOpacity>
-          <View style={styles.button}>
+          <TouchableOpacity style={styles.button} onPress={() => handlePress('+/-')}>
             <Text style={styles.buttonText}>+/-</Text>
-          </View>
-          <View style={styles.button}>
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.button} onPress={() => handlePress('%')}>
             <Text style={styles.buttonText}>%</Text>
-          </View>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.button} onPress={() => handlePress('/')}>
             <Text style={styles.buttonText}>/</Text>
           </TouchableOpacity>
@@ -149,8 +155,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#f0f0f0",
   },
-  result: {
+  currentValue: {
     flex: 2,
+    flexDirection: "row",
+  },
+  result: {
+    flex: 10,
     backgroundColor: "#fff",
     justifyContent: "center",
     alignItems: "flex-end",
@@ -159,6 +169,12 @@ const styles = StyleSheet.create({
     fontSize: 40,
     fontWeight: "bold",
     padding: 20,
+  },
+  operation: {
+    flex: 2,
+    backgroundColor: "#f0f0f0",
+    justifyContent: "center",
+    alignItems: "center",
   },
   buttons: {
     flex: 8,
